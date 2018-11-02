@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 15 19:12:24 2018
+
+@author: mparsa
+"""
+#The goal of prediction is to use the information of channel to predict the information of the same channel one ms
+
+####Train Score: 3.97 RMSE  TrainSize=448
+####Test Score: 4.56 RMSE   TestSize=188
+
+import numpy as np, cmath, scipy as sp
+import scipy.io
+import sklearn
+from matplotlib import pyplot as plt
+from sklearn.svm import SVR
+from pandas import Series
+from matplotlib import pyplot
+import numpy as np
+#import basic functions from numpy that we'll need
+from numpy import pi, sin, cos, exp, sqrt, log, log10, random, angle, real, imag  
+from numpy import zeros, ceil, floor, absolute, linspace
+from numpy.fft import fft, ifft
+from scipy import signal as sig
+from scipy.signal import hilbert
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import *
+from pandas.tools.plotting import autocorrelation_plot
+import seaborn as sns
+import sklearn
+from pandas import Series
+from pandas import DataFrame
+from pandas import read_csv
+from pandas import datetime
+from pandas import DataFrame
+from statsmodels.tsa.arima_model import ARIMA
+from matplotlib import pyplot
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.graphics.tsaplots import plot_acf
+from matplotlib import pyplot
+from sklearn import linear_model
+from statsmodels.tsa.arima_model import ARIMA
+from sklearn.metrics import mean_squared_error
+import pandas
+import matplotlib.pyplot as plt
+import numpy
+import matplotlib.pyplot as plt
+import pandas
+import math
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from pandas import DataFrame
+import pandas as pd 
+import matplotlib.pyplot as plt
+from pandas import DataFrame
+from pandas import concat
+def RMSE(predicted, actual):
+    mse = (predicted - actual)**2
+    rmse = np.sqrt(mse.sum()/mse.count())
+    return rmse
+def RMSE(predicted, actual):
+    mse = (predicted - actual)**2
+    rmse = np.sqrt(mse.sum()/mse.count())
+    return rmse
+ 
+# fix random seed for reproducibility
+numpy.random.seed(7)
+# load the dataset
+sns.set_palette('muted')
+sns.set_style('darkgrid')
+data = scipy.io.loadmat('sampleEEGdata')
+EEGdata = data["EEG"][0,0]["data"]
+np.shape(EEGdata)
+x=24
+dataX=[]
+dataE=EEGdata[:,:,12]
+dataCZ=dataE[24,:]
+#for i in range(x):
+#    a=[]
+#    a = dataE[i,:]
+#    dataX.append(a)
+#        
+#for i in range(x+1, 2*x+1):
+#    a=[]
+#    a = dataE[i,:]
+#    dataX.append(a) 
+#import numpy as np
+#myarray = np.asarray(dataX)
+#a=np.reshape(myarray, (1, 60*640))     
+#		dataY.append(dataE[i + look_back])
+#	return numpy.array(dataX), numpy.array(dataY)
+#visulization
+# Get current size
+fig_size = plt.rcParams["figure.figsize"]
+# Prints: [8.0, 6.0]
+print ("Current size:", fig_size)
+# Set figure width to 12 and height to 9
+fig_size[0] = 12
+fig_size[1] = 9
+plt.rcParams["figure.figsize"] = fig_size
+matplotlib.rcParams.update({'font.size': 20})
+
+plt.plot(dataE)
+plt.xlabel('time (ms)')
+plt.ylabel('voltage (µV)')
+plt.title(' EEG of 64 Channels of One Subject')
+plt.show()
+
+plt.plot(dataCZ)
+plt.xlabel('time (ms)')
+plt.ylabel('voltage (µV)')
+plt.title('EEG of the CZ Channel of One Subject')
+plt.show()
+
+
+
+
+dataE=dataCZ
+from statsmodels.graphics.tsaplots import plot_pacf
+
+Step=100
+temps = DataFrame(dataE)
+dataframe = concat([ temps.shift(2*Step), temps.shift(Step), temps], axis=1) 
+dataframe.columns = [ 't-Step', 't', 't+Step']
+print(dataframe)
+
+data=DataFrame.as_matrix(dataframe)
+yy=data[3*Step:len(data)-2*Step,1]
+dataE=yy
+plot_acf(dataE)
+pyplot.show()
+
+plot_pacf(dataE, lags=10)
+pyplot.show()
+
+
+plot_pacf(dataE, lags=20)
+pyplot.show()
+
+
+#plt.plot(a[1:640])
+#plt.xlabel('time (ms)')
+#plt.ylabel('voltage (µV)')
+#plt.title(' A time serires of EEG of 64 Channels of one subject')
+#plt.show()
+train_size = int(len(dataE) * 0.7)
+test_size = len(dataE) - train_size
+train, test = dataE[0:train_size], dataE[train_size:len(dataE)]
+print(len(train), len(test))
+
+
+from statsmodels.tsa.stattools import adfuller
+def test_stationarity(timeseries):
+    
+    rolmean = pd.rolling_mean(timeseries, window=12)
+    rolstd = pd.rolling_std(timeseries, window=12)
+
+    
+    orig = plt.plot(timeseries, color='blue',label='Original')
+    mean = plt.plot(rolmean, color='red', label='Rolling Mean')
+    std = plt.plot(rolstd, color='black', label = 'Rolling Std')
+    plt.legend(loc='best')
+    plt.title('Rolling Mean & Standard Deviation')
+    plt.show(block=False)
+    
+   
+    print ('Results of Dickey-Fuller Test:')
+    dftest = adfuller(timeseries, autolag='AIC')
+    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used'])
+    for key,value in dftest[4].items():
+        dfoutput['Critical Value (%s)'%key] = value
+    print (dfoutput)
+    
+
+
+def create_dataset(dataE, look_back):
+	dataX, dataY = [], []
+	for i in range(len(dataE)-look_back-1):
+		a = dataE[i:(i+look_back)]
+		dataX.append(a)
+		dataY.append(dataE[i + look_back])
+	return numpy.array(dataX), numpy.array(dataY)
+
+look_back = 3
+
+
+trainX, trainY = create_dataset(train, look_back)
+testX, testY = create_dataset(test, look_back)
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.datasets import make_regression
+rf = RandomForestRegressor().fit(trainX, trainY)
+
+
+# make predictions
+trainPredict = rf.predict(trainX)
+testPredict = rf.predict(testX)
+# invert predictions
+
+# calculate root mean squared error
+trainScore = math.sqrt(mean_squared_error(trainY, trainPredict))
+print('Train Score: %.2f RMSE' % (trainScore))
+testScore = math.sqrt(mean_squared_error(testY, testPredict))
+print('Test Score: %.2f RMSE' % (testScore))
+
+# plot baseline and predictions
+plt.plot(dataE)
+plt.plot(trainY)
+pyplot.plot(trainPredict, color='red')
+
+fig_size = plt.rcParams["figure.figsize"]
+# Prints: [8.0, 6.0]
+print ("Current size:", fig_size)
+# Set figure width to 12 and height to 9
+fig_size[0] = 12
+fig_size[1] = 9
+plt.rcParams["figure.figsize"] = fig_size
+matplotlib.rcParams.update({'font.size': 20})
+plt.plot(np.append(trainY,testY, axis=0))
+pyplot.plot(np.append(trainY,testPredict), color='green')
+
+
+plt.xlabel('time (ms)')
+plt.ylabel('voltage (µV)')
+plt.title('Real and Predicted Values of EEG of the CZ Channel of One Subject')
+
+plt.plot(testY)
+pyplot.plot(testPredict, color='red')
+
+plt.show()
+
+from sklearn.metrics import mean_absolute_error
+expected = testY
+predictions = testPredict
+forecast_errors = [expected[i]-predictions[i] for i in range(len(expected))]
+mean_forecast_error = sum(forecast_errors)/float(len(forecast_errors))
+mae = mean_absolute_error(expected, predictions)
+print('MAE: %f' % mae)
+print( mean_forecast_error)
+
+
+import math
+
+def average(x):
+    assert len(x) > 0
+    return float(sum(x)) / len(x)
+
+def pearson_def(x, y):
+    assert len(x) == len(y)
+    n = len(x)
+    assert n > 0
+    avg_x = average(x)
+    avg_y = average(y)
+    diffprod = 0
+    xdiff2 = 0
+    ydiff2 = 0
+    for idx in range(n):
+        xdiff = x[idx] - avg_x
+        ydiff = y[idx] - avg_y
+        diffprod += xdiff * ydiff
+        xdiff2 += xdiff * xdiff
+        ydiff2 += ydiff * ydiff
+
+    return diffprod / math.sqrt(xdiff2 * ydiff2)
+print (pearson_def(expected, predictions))
+
+
+plt.scatter(predictions,expected ,  color='black')
+plt.plot(predictions,predictions , color='blue', linewidth=3)
+
+plt.xticks(())
+plt.yticks(())
+
+plt.show()
+
+
+
+
