@@ -45,10 +45,6 @@ end
 tic
 fismat=genfis1([trnN,Out],2);
 fismat2 = anfis([trnN,Out],fismat,[300,0.000001,0.1,0.9,1.1],[]);
-% R=[0.25 0.97 0.25   ]
-% Bou=[0 0 0 ; 1 1 1]
-% fismat=genfis2(Xin,Xout,R,Bou);
-% fismat2 = anfis(trnData,[499,0.0001,0.01,0.9,1.1]) 
 OO= evalfis(CekN, fismat2);
 toc
 PERT=mse(OUTT-OO);
@@ -60,6 +56,4 @@ ROOTPER=norm(EET-chk_data)/sqrt(length(EET));
 NMSE=(NT*PER)/(mse(chk_data'-mean(chk_data))*NT);
 AVE=(1/NT)*sum( abs(ERROR)./abs(chk_data) )*100;
 Corr=corrcoef(EET,chk_data);
-    
-% 
-% ROOTPERT=norm(OO-TESTDAT(:,5))/sqrt(length(OO))
+
