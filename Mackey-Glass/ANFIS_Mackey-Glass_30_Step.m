@@ -63,10 +63,6 @@ Out=aan(1:N,p+1)
 fismat=genfis1([trnN,Out],2);
 fismat2 = anfis([trnN,Out],fismat,[2000,0.000000001,0.0001,0.9,1.1],[]);
 
-% R=[0.25 0.97 0.25   ]
-% Bou=[0 0 0 ; 1 1 1]
-% fismat=genfis2(Xin,Xout,R,Bou);
-% fismat2 = anfis(trnData,[499,0.0001,0.01,0.9,1.1]) 
 OO= evalfis(CekN, fismat2);
 toc
 PERT=mse(OUTT-OO);
