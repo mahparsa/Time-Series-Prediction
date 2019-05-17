@@ -4,8 +4,9 @@
 Created on Thu Mar 15 19:12:24 2018
 
 @author: mahparsa
+# you can find a nice code for time series prediction from here https://machinelearningmastery.com/how-to-develop-deep-learning-models-for-univariate-time-series-forecasting/
+
 """
-# you can find a sourse code here https://machinelearningmastery.com/how-to-develop-deep-learning-models-for-univariate-time-series-forecasting/
 import numpy as np, cmath, scipy as sp
 import scipy.io
 import sklearn
@@ -33,14 +34,11 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from sklearn.metrics import mean_absolute_error
-
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.graphics.tsaplots import plot_pacf
 from pandas import Series
 from pandas import DataFrame
 from pandas import concat
-
-
 
 data = scipy.io.loadmat('CZWnoise')
 #data is recorded for 1h.
@@ -51,38 +49,25 @@ EEGdata = data["CZ1"]
 print( "the type of EEGdata  is:.... ", type(EEGdata ))
 print( "the shape of EEGdata  is:.... ", np.shape(EEGdata))
 
-#Out[81]: (64, 640, 99)
-#we are choosing cahnnel 12 for 12 subjects
-
 data = scipy.io.loadmat('CZWnoise')
-#data=EEGdata[47,:,10]
 EEGdata1 = data["CZ1"]
 
-#np.transpose(data["CZ1"])
 EEGdata1 = np.transpose(data["CZ1"])
 np.shape(EEGdata1)
 dataE=[]
-
 dataE=EEGdata1[36000:40000]
-
 plot_acf(dataE)
 pyplot.show()
-
 plot_pacf(dataE, lags=10)
 pyplot.show()
-
-
 plot_pacf(dataE, lags=20)
 pyplot.show()
-
 plot_pacf(dataE, lags=200)
 pyplot.show()
 #np.random.seed(4)
 
-
-
 lag=2
-Step=5
+Step=75
 temps = DataFrame(dataE)
 dataframe = concat([ temps.shift((2)*Step), temps.shift(Step), temps], axis=1)
  
@@ -100,33 +85,7 @@ print(len(train), len(test))
 # We need to do some explorations with the data
 
 from sklearn.preprocessing import MinMaxScaler
-# normalize the dataset
-#scaler = MinMaxScaler(feature_range=(0, 1))
-#dataE = scaler.fit_transform(dataE)
-#plot(dataE)
-# convert an array of values into a dataset matrix
-#----------------------------------------to make a time series of dataE
 
-#create-dataset creats a time series from a NumPy array
-
-#the look_back shows the the number of previous time steps to use as input variables to predict the next time period 
-#in this case defaulted to 1.
-
-
-#def create_dataset(dataE, look_back):
-#	dataX, dataY = [], []
-#	for i in range(len(dataE)-look_back-1):
-#		a = dataE[i:(i+look_back)]
-#		dataX.append(a)
-#		dataY.append(dataE[i + look_back])
-#	return np.array(dataX), np.array(dataY)
-#
-#look_back = 3
-##to define the optimal values of look-back
-#trainX, trainY = create_dataset(train, look_back)
-#testX, testY = create_dataset(test, look_back)
-#print(trainX)
-#print(trainX.shape)
 
 #The input vector of the LSTM network must be in the form of: [samples, time steps, features].
 #Using reshape, we define it 
@@ -146,8 +105,6 @@ trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 print(trainX[1])
 print(trainY[1])
 
-#array([[12.475137 , 10.774388 , -4.1156535,  2.4252448]], dtype=float32)
-#array([12.475137 , 10.774388 , -4.1156535], dtype=float32)
 testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
 #to design and fit our LSTM network for this problem.
@@ -164,13 +121,7 @@ model.fit(trainX, trainY, epochs=500, batch_size=1, verbose=2)
 # make predictions
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
-# invert predictions
-#def RMSE(predicted, actual):
-#    mse = (predicted - actual)**2
-#    rmse = np.sqrt(mse.sum()/mse.count())
-#    return rmse
 
-# calculate root mean squared error
 trainScore = math.sqrt(mean_squared_error(trainY, trainPredict))
 trainScore_mse = mean_squared_error(trainY, trainPredict)
 print('Train Score: %.2f RMSE' % (trainScore))
@@ -218,10 +169,3 @@ plt.grid(True)
 plt.legend(('real values', 'predicted values'),  loc='upper right')
 plt.show()
 
-#Train Score: 8.47 RMSE
-#Train Score: 71.78 MSE
-#Test Score: 10.28 RMSE
-#Test Score: 105.65 MSE
-#MAE: 8.110804
-#Forecast Errors: [-0.34442118]
-#Bias: -0.344421
