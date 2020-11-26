@@ -1,8 +1,9 @@
 
 
 
-Time-Series-Prediction
+# Time-Series-Prediction
 
+This repository contains scripts for several ML that can be useful as time series prediction model. 
 
 
 Authors
